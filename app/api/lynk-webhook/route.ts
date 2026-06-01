@@ -10,6 +10,16 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 import { DEFAULT_ACCESS_DAYS, TRIAL_ACCESS_DAYS, TRIAL_KEYWORDS } from '@/lib/config'
 
+
+// ── COHORT DETECTION FUNCTIONS ──────────────────────────────
+const COHORT_KEYWORDS = ['cohort', 'sesi', 'expert', 'learning cohort']
+
+function isCohortProduct(productName: string): boolean {
+  return COHORT_KEYWORDS.some(kw =>
+    productName.toLowerCase().includes(kw)
+  )
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY!)
 
 // ── CONTOH PAYLOAD DARI LYNK.ID ─────────────────────────────
@@ -81,6 +91,70 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email tidak ditemukan' }, { status: 400 })
     }
 
+// ── CEK APAKAH INI PRODUK COHORT ──────────────────
+const isCohort = isCohortProduct(productName)
+
+if (isCohort) {
+  // ALUR COHORT
+  const admin = createAdminClient()
+
+  // Cari sesi cohort yang sesuai dengan nama produk
+  const { data: cohortSessions } = await admin
+    .from('cohort_sessions')
+    .select('*')
+    .eq('aktif', true)
+
+  // Cari sesi yang topiknya mirip dengan nama produk
+  const matchedSession = cohortSessions?.find(s =>
+    productName.toLowerCase().includes(s.speaker_nama.toLowerCase().split(' ')[0].toLowerCase()) ||
+    s.topik.toLowerCase().split(' ').some((kata: string) => productName.toLowerCase().includes(kata))
+  )
+
+  if (!matchedSession) {
+    console.error('Cohort session tidak ditemukan untuk produk:', productName)
+    return NextResponse.json({ error: 'Sesi cohort tidak ditemukan' }, { status: 404 })
+  }
+
+  // Update slot tersisa
+  await admin
+    .from('cohort_sessions')
+    .update({ slot_tersisa: Math.max(0, matchedSession.slot_tersisa - 1) })
+    .eq('id', matchedSession.id)
+
+  // Kirim email berisi link meeting
+  const appUrl       = process.env.NEXT_PUBLIC_APP_URL || 'https://app.mulaiinvest.id'
+  const fromEmail    = process.env.RESEND_FROM_EMAIL   || 'Admin@mulaiinvest.id'
+  const tglFormatted = new Date(matchedSession.tanggal).toLocaleDateString('id-ID', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  })
+
+  await resend.emails.send({
+    from:    `Pak Andung MulaiInvest <${fromEmail}>`,
+    to:      buyerEmail,
+    subject: `🎓 Link sesi cohort kamu — ${tglFormatted}`,
+    html:    buildCohortEmailHtml({
+      buyerName:    buyerName,
+      tanggal:      tglFormatted,
+      waktuMulai:   matchedSession.waktu_mulai,
+      speakerNama:  matchedSession.speaker_nama,
+      topik:        matchedSession.topik,
+      linkMeeting:  matchedSession.link_meeting,
+    }),
+  })
+
+  console.log(`✅ Email cohort terkirim ke: ${buyerEmail} untuk sesi: ${matchedSession.topik}`)
+
+  return NextResponse.json({
+    success:     true,
+    type:        'cohort',
+    message:     'Link meeting terkirim ke email pembeli',
+    email:       buyerEmail,
+    session_id:  matchedSession.id,
+  })
+}
+
+// ── TENTUKAN DURASI AKSES (untuk non-cohort) ────────────────
+    
     // ── TENTUKAN DURASI AKSES ──────────────────────────────────
     // Kalau nama produk mengandung kata trial, beri akses 7 hari.
     // Kalau tidak, beri akses 30 hari.
@@ -307,6 +381,114 @@ function buildEmailHtml(p: EmailProps): string {
         © 2024 MulaiInvest · 
         <a href="https://mulaiinvest.id" style="color:#2D6E7E;">mulaiinvest.id</a> · 
         Untuk berhenti berlangganan, hubungi Admin@mulaiinvest.id
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `
+}
+
+// ── EMAIL TEMPLATE UNTUK COHORT ──────────────────
+function buildCohortEmailHtml({
+  buyerName,
+  tanggal,
+  waktuMulai,
+  speakerNama,
+  topik,
+  linkMeeting,
+}: {
+  buyerName:   string
+  tanggal:     string
+  waktuMulai:  string
+  speakerNama: string
+  topik:       string
+  linkMeeting: string
+}): string {
+  const firstName = buyerName.split(' ')[0]
+
+  return `
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#F5EDD8;font-family:'DM Sans',Helvetica,Arial,sans-serif;">
+  <div style="max-width:520px;margin:32px auto;background:#FDF8F0;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(15,76,92,0.12);">
+
+    <!-- Header -->
+    <div style="background:#0F4C5C;padding:32px 32px 24px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">🎓</div>
+      <h1 style="margin:0;color:#FDF8F0;font-size:24px;font-weight:700;">
+        Halo, ${firstName}!<br>Tempat kamu sudah terkonfirmasi.
+      </h1>
+      <p style="margin:10px 0 0;color:rgba(212,233,237,0.8);font-size:14px;">
+        Berikut detail sesi cohort kamu.
+      </p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:32px;">
+
+      <!-- Detail sesi -->
+      <div style="background:#F5EDD8;border:2px solid #E2D9C8;border-radius:14px;padding:22px 24px;margin-bottom:24px;">
+        <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#7A8D97;letter-spacing:0.1em;text-transform:uppercase;">
+          Detail Sesi
+        </p>
+        <table style="width:100%;margin-top:14px;border-collapse:collapse;">
+          <tr>
+            <td style="padding:7px 0;font-size:13px;color:#7A8D97;width:100px;vertical-align:top;">Tanggal</td>
+            <td style="padding:7px 0;font-size:14px;color:#1A2832;font-weight:600;">${tanggal}</td>
+          </tr>
+          <tr>
+            <td style="padding:7px 0;font-size:13px;color:#7A8D97;vertical-align:top;">Waktu</td>
+            <td style="padding:7px 0;font-size:14px;color:#1A2832;">${waktuMulai} (up to 2 jam)</td>
+          </tr>
+          <tr>
+            <td style="padding:7px 0;font-size:13px;color:#7A8D97;vertical-align:top;">Speaker</td>
+            <td style="padding:7px 0;font-size:14px;color:#1A2832;font-weight:600;">${speakerNama}</td>
+          </tr>
+          <tr>
+            <td style="padding:7px 0;font-size:13px;color:#7A8D97;vertical-align:top;">Topik</td>
+            <td style="padding:7px 0;font-size:14px;color:#1A2832;">${topik}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Link meeting (highlight utama) -->
+      <div style="background:#DCF0E5;border:2px solid #B2DEC5;border-radius:14px;padding:22px 24px;margin-bottom:24px;text-align:center;">
+        <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#2E7D52;text-transform:uppercase;letter-spacing:0.08em;">
+          🔗 Link Sesi Kamu
+        </p>
+        <a href="${linkMeeting}"
+           style="display:inline-block;background:#2E7D52;color:white;text-decoration:none;
+                  padding:14px 32px;border-radius:12px;font-weight:700;font-size:15px;
+                  letter-spacing:0.02em;margin-top:8px;">
+          Masuk ke Sesi →
+        </a>
+        <p style="margin:12px 0 0;font-size:12px;color:#2E7D52;word-break:break-all;">
+          ${linkMeeting}
+        </p>
+      </div>
+
+      <div style="background:#FDF0DC;border:1px solid #F5D4A0;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;color:#7A4A0A;line-height:1.65;">
+          ⏰ <strong>Simpan link ini.</strong> Masuk ke sesi tepat waktu pada ${tanggal} jam ${waktuMulai}.
+          Siapkan pertanyaan kamu sebelum sesi dimulai!
+        </p>
+      </div>
+
+      <p style="font-size:13px;color:#7A8D97;line-height:1.7;margin:0;">
+        Ada kendala? Balas email ini atau hubungi
+        <a href="mailto:Admin@mulaiinvest.id" style="color:#2D6E7E;">Admin@mulaiinvest.id</a>.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#F5EDD8;padding:20px 32px;text-align:center;border-top:1px solid #E2D9C8;">
+      <p style="margin:0;font-size:12px;color:#7A8D97;">
+        © 2024 MulaiInvest · <a href="https://mulaiinvest.id" style="color:#2D6E7E;">mulaiinvest.id</a>
       </p>
     </div>
   </div>
