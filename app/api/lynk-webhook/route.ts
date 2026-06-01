@@ -57,10 +57,15 @@ export async function POST(req: NextRequest) {
     // Debug: lihat nilai setelah extract
     console.log('📊 Data setelah extract:', { buyerName, buyerEmail, productName, eventType })
 
-    // Hanya proses event sukses
-    if (!eventType.includes('success') && !eventType.includes('paid') && !eventType.includes('complete')) {
-      return NextResponse.json({ message: 'Event diabaikan (bukan payment success)' })
+   // Hanya proses event pembayaran sukses
+    const isPaymentSuccess = eventType.includes('success') || eventType.includes('paid') || eventType.includes('complete') || eventType.includes('received')
+    
+    if (!isPaymentSuccess) {
+      console.log('⏭️ Event diabaikan (bukan payment success):', eventType)
+      return NextResponse.json({ message: 'Event diabaikan' })
     }
+    
+    console.log('✅ Event valid, lanjut buat akun...')
 
     if (!buyerEmail) {
       console.error('Email pembeli tidak ditemukan dalam payload')
