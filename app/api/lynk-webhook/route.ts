@@ -32,8 +32,8 @@ const resend = new Resend(process.env.RESEND_API_KEY!)
 export async function POST(req: NextRequest) {
   try {
     // 🔥 FIRST LOG SEBELUM APAPUN
-    console.log('🚀 WEBHOOK ENDPOINT HIT')
-    console.log('Headers:', Object.fromEntries(req.headers.entries()))
+    //console.log('🚀 WEBHOOK ENDPOINT HIT')
+    //console.log('Headers:', Object.fromEntries(req.headers.entries()))
     
 // Verifikasi signature dari Lynk
     const signature = req.headers.get('x-lynk-signature')
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     const payload = await req.json()
     // 🔥 DEBUG: Cek apakah webhook diterima
-    console.log('🔥 WEBHOOK HIT - Payload diterima:', JSON.stringify(payload, null, 2))
+    //console.log('🔥 WEBHOOK HIT - Payload diterima:', JSON.stringify(payload, null, 2))
     console.log('Lynk webhook received:', JSON.stringify(payload, null, 2))
 
    // ── AMBIL DATA PEMBELI ─────────────────────────────────────
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     const eventType    = payload.event          || 'payment.success'
     
     // Debug: lihat nilai setelah extract
-    console.log('📊 Data setelah extract:', { buyerName, buyerEmail, productName, eventType })
+    //console.log('📊 Data setelah extract:', { buyerName, buyerEmail, productName, eventType })
 
    // Hanya proses event pembayaran sukses
     const isPaymentSuccess = eventType.includes('success') || eventType.includes('paid') || eventType.includes('complete') || eventType.includes('received')
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Event diabaikan' })
     }
     
-    console.log('✅ Event valid, lanjut buat akun...')
+    //console.log('✅ Event valid, lanjut buat akun...')
 
     if (!buyerEmail) {
       console.error('Email pembeli tidak ditemukan dalam payload')
