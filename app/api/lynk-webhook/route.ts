@@ -34,10 +34,10 @@ export async function POST(req: NextRequest) {
     // ── VERIFIKASI SECRET ──────────────────────────────────────
     // Lynk.id mengirim secret di header untuk membuktikan ini bukan
     // request palsu. Aktifkan ini setelah kamu set LYNK_WEBHOOK_SECRET.
-    // const secret = req.headers.get('x-webhook-secret') || req.headers.get('x-lynk-secret')
-    // if (secret !== process.env.LYNK_WEBHOOK_SECRET) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
+    const secret = req.headers.get('x-webhook-secret') || req.headers.get('x-lynk-secret')
+    if (secret !== process.env.LYNK_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const payload = await req.json()
     console.log('Lynk webhook received:', JSON.stringify(payload, null, 2))
