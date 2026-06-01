@@ -54,22 +54,19 @@ export default async function ChatPage() {
         </h1>
         
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <a 
-            href="/rapor"
-            style={{
-              color: '#FDF8F0',
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 500,
-              padding: '8px 12px',
-              borderRadius: 6,
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-          >
-            📋 Rapor Saya
-          </a>
+         <a 
+  href="/rapor"
+  style={{
+    color: '#FDF8F0',
+    textDecoration: 'none',
+    fontSize: 14,
+    fontWeight: 500,
+    padding: '8px 12px',
+    borderRadius: 6,
+  }}
+>
+  📋 Rapor Saya
+</a>
         </div>
       </nav>
 
