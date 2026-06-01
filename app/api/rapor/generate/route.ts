@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     //    CATATAN: sesuaikan nama tabel 'messages' dan nama kolom
     //    dengan struktur tabel messages di project kamu
     const { data: messages } = await admin
-      .from('messages')
+      .from('chat_messages')
       .select('role, content, created_at')
       .eq('user_id', user_id)
       .order('created_at', { ascending: true })
