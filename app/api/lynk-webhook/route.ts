@@ -44,13 +44,18 @@ export async function POST(req: NextRequest) {
     console.log('🔥 WEBHOOK HIT - Payload diterima:', JSON.stringify(payload, null, 2))
     console.log('Lynk webhook received:', JSON.stringify(payload, null, 2))
 
-    // ── AMBIL DATA PEMBELI ─────────────────────────────────────
-    // Sesuaikan nama field di bawah dengan payload Lynk yang sebenarnya.
-    // Kalau tidak yakin, lihat di dashboard Lynk → Webhook Log.
-    const buyerName    = payload.buyer_name  || payload.name         || 'Pelanggan'
-    const buyerEmail   = payload.buyer_email || payload.email        || ''
-    const productName  = payload.product_name || payload.product     || ''
-    const eventType    = payload.event        || 'payment.success'
+   // ── AMBIL DATA PEMBELI ─────────────────────────────────────
+    // Struktur payload Lynk: nested di dalam data.message_data
+    const customerData = payload.data?.message_data?.customer || {}
+    const itemsData    = payload.data?.message_data?.items || []
+    
+    const buyerName    = customerData.name      || payload.buyer_name || payload.name || 'Pelanggan'
+    const buyerEmail   = customerData.email     || payload.buyer_email || payload.email || ''
+    const productName  = itemsData[0]?.title    || payload.product_name || payload.product || ''
+    const eventType    = payload.event          || 'payment.success'
+    
+    // Debug: lihat nilai setelah extract
+    console.log('📊 Data setelah extract:', { buyerName, buyerEmail, productName, eventType })
 
     // Hanya proses event sukses
     if (!eventType.includes('success') && !eventType.includes('paid') && !eventType.includes('complete')) {
