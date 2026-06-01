@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panduan Deploy Pak Andung — Klik demi Klik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --cream:#FDF8F0;--cream-dark:#F5EDD8;--teal:#0F4C5C;--teal-mid:#2D6E7E;
+  --teal-light:#D4E9ED;--amber:#E89B3C;--amber-light:#FDF0DC;--amber-dark:#B5731C;
+  --green:#2E7D52;--green-light:#DCF0E5;--red:#C0392B;--red-light:#FDECEA;
+  --ink:#1A2832;--body:#3D4D58;--muted:#7A8D97;--border:#E2D9C8;
+}
+body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.header{background:var(--teal);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-family:'Instrument Serif',serif;font-size:20px;color:var(--cream)}
+.logo em{color:var(--amber);font-style:italic}
+.badge{background:rgba(255,255,255,.12);color:#A8D4DC;font-size:11px;font-weight:500;letter-spacing:.08em;padding:5px 12px;border-radius:20px}
+.hero{background:var(--teal);padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:40px;background:var(--cream);clip-path:ellipse(55% 100% at 50% 100%)}
+.eyebrow{display:inline-block;background:rgba(232,155,60,.2);color:var(--amber);border:1px solid rgba(232,155,60,.4);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:20px}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(28px,5vw,48px);color:var(--cream);margin-bottom:16px;line-height:1.12}
+.hero h1 em{color:var(--amber);font-style:italic}
+.hero p{color:rgba(212,233,237,.8);font-size:16px;max-width:54ch;margin:0 auto;font-weight:300}
+.w{max-width:760px;margin:0 auto;padding:0 24px 80px}
+/* PHASE */
+.phase{margin:48px 0 0}
+.phase-header{display:flex;align-items:center;gap:16px;padding:18px 24px;border-radius:14px 14px 0 0;border:1px solid var(--border);border-bottom:none}
+.phase-header.p1{background:var(--teal)}
+.phase-header.p2{background:#1A5236}
+.phase-header.p3{background:#7A4A0A}
+.phase-header.p4{background:#1A3A5C}
+.phase-header.p5{background:#4A1A5C}
+.phase-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:18px;flex-shrink:0;background:rgba(255,255,255,.2);color:white}
+.phase-title{font-family:'Instrument Serif',serif;font-size:22px;color:white}
+.phase-sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:2px}
+.phase-body{border:1px solid var(--border);border-radius:0 0 14px 14px;overflow:hidden}
+/* STEPS */
+.step{border-bottom:1px solid var(--border);padding:24px}
+.step:last-child{border-bottom:none}
+.step-meta{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+.step-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.step-icon.teal{background:var(--teal-light);border:1.5px solid var(--teal-mid)}
+.step-icon.amber{background:var(--amber-light);border:1.5px solid var(--amber)}
+.step-icon.green{background:var(--green-light);border:1.5px solid var(--green)}
+.step-icon.purple{background:#F0E8F8;border:1.5px solid #9B59B6}
+.step-num{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber-dark)}
+.step h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--ink);line-height:1.2}
+.step p{font-size:14.5px;color:var(--body);margin-bottom:10px}
+.step p:last-child{margin-bottom:0}
+/* CODE BLOCKS */
+.code-block{background:var(--ink);border-radius:10px;overflow:hidden;margin:12px 0}
+.code-header{background:#263340;padding:8px 16px;display:flex;align-items:center;justify-content:space-between}
+.code-dots{display:flex;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.r{background:#FF5F57}.dot.y{background:#FFBD2E}.dot.g{background:#28CA42}
+.code-label{font-family:'DM Mono',monospace;font-size:10px;color:#7A9AAD;letter-spacing:.06em}
+.code-body{padding:16px;font-family:'DM Mono',monospace;font-size:13px;color:#C8D8E0;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+.code-body .hi{color:var(--amber)}
+.code-body .dim{color:#5A7A8A}
+/* ACTION BOXES */
+.box{border-radius:10px;padding:14px 18px;margin:12px 0;font-size:14px;line-height:1.65}
+.box strong{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;font-weight:700}
+.box.do{background:var(--green-light);border:1px solid #B2DEC5;color:#1A5236}
+.box.do strong{color:var(--green)}
+.box.warn{background:var(--amber-light);border:1px solid #F5D4A0;color:#7A4A0A}
+.box.warn strong{color:var(--amber-dark)}
+.box.info{background:var(--teal-light);border:1px solid #B0D4DC;color:var(--teal)}
+.box.info strong{color:var(--teal)}
+.box.stop{background:var(--red-light);border:1px solid #F5C5C0;color:#7A1F1A}
+.box.stop strong{color:var(--red)}
+/* FILE TREE */
+.tree{background:var(--ink);border-radius:12px;padding:20px;margin:14px 0;font-family:'DM Mono',monospace;font-size:13px;line-height:1.8;color:#C8D8E0}
+.tree .dir{color:#E89B3C}
+.tree .file{color:#A8D4DC}
+.tree .comment{color:#5A7A8A}
+/* ENV TABLE */
+.env-table{width:100%;border-collapse:collapse;background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:14px 0}
+.env-table th{background:var(--cream-dark);padding:10px 14px;text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.env-table td{padding:12px 14px;border-top:1px solid var(--border);font-size:13.5px;color:var(--body);vertical-align:top}
+.env-table td:first-child{font-family:'DM Mono',monospace;font-size:12.5px;color:var(--teal);white-space:nowrap}
+.env-table td em{color:var(--muted);font-size:12px;display:block;margin-top:2px;font-style:normal}
+.req{display:inline-block;background:var(--red-light);color:var(--red);font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:4px;margin-left:4px}
+.opt{display:inline-block;background:var(--amber-light);color:var(--amber-dark);font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:4px;margin-left:4px}
+ol.steps-list{counter-reset:ol;list-style:none;padding:0}
+ol.steps-list li{counter-increment:ol;padding:8px 0 8px 36px;position:relative;font-size:14.5px;color:var(--body);border-bottom:1px dashed var(--border)}
+ol.steps-list li:last-child{border-bottom:none}
+ol.steps-list li::before{content:counter(ol);position:absolute;left:0;top:8px;width:24px;height:24px;background:var(--teal);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;line-height:24px;text-align:center}
+code{font-family:'DM Mono',monospace;font-size:.88em;background:var(--cream-dark);padding:1px 6px;border-radius:4px;color:var(--teal)}
+strong{color:var(--ink)}
+.divider{display:flex;align-items:center;gap:16px;margin:40px 0;color:var(--border)}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{font-family:'Instrument Serif',serif;font-size:22px;color:var(--amber)}
+footer{background:var(--teal);color:var(--cream);text-align:center;padding:40px 24px}
+footer p{color:#A8D4DC;font-size:13px;max-width:50ch;margin:.5rem auto 0}
+.checklist-final{background:white;border:1px solid var(--border);border-top:3px solid var(--green);border-radius:12px;padding:24px 28px;margin:24px 0}
+.checklist-final h3{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);margin-bottom:16px}
+.checklist-final ul{list-style:none}
+.checklist-final li{padding:9px 0 9px 30px;position:relative;font-size:14.5px;color:var(--body);border-bottom:1px dashed var(--border)}
+.checklist-final li:last-child{border-bottom:none}
+.checklist-final li::before{content:'☐';position:absolute;left:0;color:var(--teal-mid);font-size:17px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Mulai<em>Invest</em> · Panduan Deploy</div>
+  <div class="badge">PAK ANDUNG v1.0</div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Panduan Teknis Lengkap</div>
+  <h1>Deploy Pak Andung<br><em>klik demi klik</em></h1>
+  <p>Dari nol sampai app.mulaiinvest.id hidup — dengan semua kode yang sudah jadi. Kamu tinggal copy-paste dan ikuti langkah-langkahnya.</p>
+</div>
+
+<div class="w">
+
+  <!-- ═══ PHASE 0: File Yang Sudah Jadi ═══ -->
+  <div class="phase">
+    <div class="phase-header p1">
+      <div class="phase-num">📦</div>
+      <div><div class="phase-title">File yang sudah dibuatkan untukmu</div><div class="phase-sub">Kamu mendapatkan semua file ini — tidak perlu mengetik kode dari nol</div></div>
+    </div>
+    <div class="phase-body">
+      <div class="step">
+        <div class="tree">
+<span class="dir">pak-andung/</span>                    <span class="comment">(folder proyek utama)</span>
+├── <span class="file">package.json</span>               <span class="comment">daftar library yang dipakai</span>
+├── <span class="file">next.config.js</span>             <span class="comment">konfigurasi Next.js</span>
+├── <span class="file">tailwind.config.js</span>         <span class="comment">konfigurasi tampilan</span>
+├── <span class="file">tsconfig.json</span>              <span class="comment">konfigurasi TypeScript</span>
+├── <span class="file">.gitignore</span>                 <span class="comment">⚠️ melindungi file rahasia dari GitHub</span>
+├── <span class="file">.env.local.example</span>        <span class="comment">template environment variables</span>
+├── <span class="file">supabase-schema.sql</span>        <span class="comment">skema database — jalankan di Supabase</span>
+│
+├── <span class="dir">app/</span>
+│   ├── <span class="file">layout.tsx</span>              <span class="comment">layout utama + font</span>
+│   ├── <span class="file">globals.css</span>            <span class="comment">style global</span>
+│   ├── <span class="file">page.tsx</span>               <span class="comment">redirect ke /login atau /chat</span>
+│   ├── <span class="dir">login/</span>
+│   │   └── <span class="file">page.tsx</span>            <span class="comment">halaman login</span>
+│   ├── <span class="dir">chat/</span>
+│   │   └── <span class="file">page.tsx</span>            <span class="comment">halaman chat (cek auth & akses)</span>
+│   ├── <span class="dir">expired/</span>
+│   │   └── <span class="file">page.tsx</span>            <span class="comment">halaman "akses berakhir"</span>
+│   └── <span class="dir">api/</span>
+│       ├── <span class="dir">chat/</span>
+│       │   └── <span class="file">route.ts</span>        <span class="comment">endpoint pesan → Anthropic</span>
+│       └── <span class="dir">lynk-webhook/</span>
+│           └── <span class="file">route.ts</span>        <span class="comment">endpoint webhook Lynk.id</span>
+│
+├── <span class="dir">components/</span>
+│   └── <span class="file">ChatInterface.tsx</span>          <span class="comment">antarmuka chat interaktif</span>
+│
+└── <span class="dir">lib/</span>
+    ├── <span class="file">config.ts</span>                  <span class="comment">konstanta (soft cap, durasi akses)</span>
+    ├── <span class="file">system-prompt.ts</span>           <span class="comment">kepribadian Pak Andung — edit di sini</span>
+    └── <span class="dir">supabase/</span>
+        ├── <span class="file">client.ts</span>              <span class="comment">koneksi Supabase dari browser</span>
+        └── <span class="file">server.ts</span>              <span class="comment">koneksi Supabase dari server</span>
+        </div>
+        <div class="box info"><strong>Cara mendapatkan file-file ini</strong>Semua file di atas sudah ada — tanyakan di chat ini "tolong berikan file [nama file]" dan saya akan tampilkan isinya untuk kamu copy-paste. Atau upload langsung ke GitHub dari artefak yang sudah dibuat.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 1: GitHub ═══ -->
+  <div class="phase">
+    <div class="phase-header p1">
+      <div class="phase-num">1</div>
+      <div><div class="phase-title">Buat repositori di GitHub</div><div class="phase-sub">~10 menit · Ini "lemari" tempat kode kamu disimpan — Vercel akan ambil kode dari sini</div></div>
+    </div>
+    <div class="phase-body">
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon teal">🐙</div>
+          <div><div class="step-num">Langkah 1.1</div><div><h3>Buat akun GitHub (kalau belum punya)</h3></div></div>
+        </div>
+        <ol class="steps-list">
+          <li>Buka <code>github.com</code> → klik <strong>Sign up</strong></li>
+          <li>Daftar pakai email, pilih username, verifikasi email</li>
+          <li>Pilih paket <strong>Free</strong> — cukup untuk proyek ini</li>
+        </ol>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon teal">📁</div>
+          <div><div class="step-num">Langkah 1.2</div><div><h3>Buat repositori baru</h3></div></div>
+        </div>
+        <ol class="steps-list">
+          <li>Login GitHub → klik tombol <strong>+</strong> (pojok kanan atas) → <strong>New repository</strong></li>
+          <li>Isi <strong>Repository name</strong>: <code>pak-andung</code></li>
+          <li>Pilih <strong>Private</strong> (agar kode tidak terlihat publik)</li>
+          <li>Centang <strong>Add a README file</strong></li>
+          <li>Klik <strong>Create repository</strong></li>
+        </ol>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon amber">⬆️</div>
+          <div><div class="step-num">Langkah 1.3</div><div><h3>Upload semua file ke GitHub</h3></div></div>
+        </div>
+        <p>Cara termudah tanpa perlu paham Git:</p>
+        <ol class="steps-list">
+          <li>Di halaman repositori → klik <strong>Add file</strong> → <strong>Upload files</strong></li>
+          <li>Drag & drop seluruh folder <code>pak-andung</code> ke area upload</li>
+          <li>Scroll ke bawah → tulis pesan commit: <code>initial: pak andung app</code></li>
+          <li>Klik <strong>Commit changes</strong></li>
+        </ol>
+        <div class="box stop"><strong>⚠️ Jangan pernah upload file ini</strong>File <code>.env.local</code> (berisi password & API key) TIDAK boleh di-upload ke GitHub. File <code>.gitignore</code> yang sudah ada seharusnya memproteksinya secara otomatis. Double-check: pastikan kamu tidak melihat file <code>.env.local</code> di repositori GitHub setelah upload.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 2: Supabase ═══ -->
+  <div class="phase">
+    <div class="phase-header p2">
+      <div class="phase-num">2</div>
+      <div><div class="phase-title">Setup Supabase (database + login)</div><div class="phase-sub">~15 menit · Supabase menyimpan data pembeli, login, dan riwayat chat</div></div>
+    </div>
+    <div class="phase-body">
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon green">🗄️</div>
+          <div><div class="step-num">Langkah 2.1</div><div><h3>Buat akun & project Supabase</h3></div></div>
+        </div>
+        <ol class="steps-list">
+          <li>Buka <code>supabase.com</code> → klik <strong>Start your project</strong> → login pakai GitHub</li>
+          <li>Klik <strong>New Project</strong></li>
+          <li>Isi <strong>Name</strong>: <code>mulaiinvest-pakandung</code></li>
+          <li>Buat <strong>Database Password</strong> yang kuat — simpan di tempat aman (tidak perlu dipakai di env variable)</li>
+          <li>Pilih <strong>Region</strong>: <code>Southeast Asia (Singapore)</code> — paling dekat dengan Indonesia</li>
+          <li>Klik <strong>Create new project</strong> → tunggu ~2 menit sampai siap</li>
+        </ol>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon green">🏗️</div>
+          <div><div class="step-num">Langkah 2.2</div><div><h3>Jalankan skema database</h3></div></div>
+        </div>
+        <p>Ini akan membuat semua tabel yang dibutuhkan (profil pengguna + riwayat chat).</p>
+        <ol class="steps-list">
+          <li>Di dashboard Supabase → klik menu <strong>SQL Editor</strong> (ikon database di sidebar kiri)</li>
+          <li>Klik <strong>New query</strong></li>
+          <li>Copy seluruh isi file <code>supabase-schema.sql</code> → paste ke editor</li>
+          <li>Klik tombol <strong>Run</strong> (atau Ctrl+Enter)</li>
+          <li>Pastikan hasilnya <strong>hijau</strong> semua — tidak ada error merah</li>
+        </ol>
+        <div class="box do"><strong>Cara cek berhasil</strong>Setelah run, klik menu <strong>Table Editor</strong> di sidebar. Kamu harus melihat 2 tabel: <code>profiles</code> dan <code>chat_messages</code>. Kalau sudah ada, berarti sukses.</div>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon amber">🔑</div>
+          <div><div class="step-num">Langkah 2.3</div><div><h3>Ambil API Keys Supabase</h3></div></div>
+        </div>
+        <p>Kamu butuh 3 angka dari Supabase:</p>
+        <ol class="steps-list">
+          <li>Di Supabase → klik ikon roda gigi (⚙️) <strong>Settings</strong> → <strong>API</strong></li>
+          <li>Catat <strong>Project URL</strong> → ini akan jadi <code>NEXT_PUBLIC_SUPABASE_URL</code></li>
+          <li>Di bagian "Project API keys" → catat <strong>anon public</strong> → ini <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></li>
+          <li>Catat <strong>service_role secret</strong> (klik "Reveal") → ini <code>SUPABASE_SERVICE_ROLE_KEY</code> — <strong>jaga kerahasiaan ini!</strong></li>
+        </ol>
+        <div class="box warn"><strong>Service role key sangat sensitif</strong>Key ini bisa bypass semua keamanan database. Jangan pernah taruh di kode yang bisa dilihat publik atau di frontend. Hanya dipakai di webhook yang berjalan di server.</div>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon green">📧</div>
+          <div><div class="step-num">Langkah 2.4</div><div><h3>Nonaktifkan konfirmasi email Supabase</h3></div></div>
+        </div>
+        <p>Secara default, Supabase minta pembeli verifikasi email sebelum bisa login. Kita akan skip ini karena akun dibuat oleh webhook (bukan pembeli sendiri).</p>
+        <ol class="steps-list">
+          <li>Supabase → <strong>Authentication</strong> → <strong>Providers</strong></li>
+          <li>Klik <strong>Email</strong></li>
+          <li>Matikan toggle <strong>Confirm email</strong> → klik <strong>Save</strong></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 3: Resend ═══ -->
+  <div class="phase">
+    <div class="phase-header p3">
+      <div class="phase-num">3</div>
+      <div><div class="phase-title">Setup Resend (email otomatis)</div><div class="phase-sub">~20 menit · Resend mengirim email login ke pembeli setelah bayar</div></div>
+    </div>
+    <div class="phase-body">
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon amber">📨</div>
+          <div><div class="step-num">Langkah 3.1</div><div><h3>Daftar Resend & verifikasi domain</h3></div></div>
+        </div>
+        <ol class="steps-list">
+          <li>Buka <code>resend.com</code> → <strong>Sign up</strong> (gratis, 3.000 email/bulan)</li>
+          <li>Setelah login → klik <strong>Domains</strong> → <strong>Add Domain</strong></li>
+          <li>Masukkan <code>mulaiinvest.id</code> → klik <strong>Add</strong></li>
+          <li>Resend akan menampilkan beberapa <strong>DNS records</strong> (3–4 baris)</li>
+          <li>Login ke panel Hostinger → <strong>Domains</strong> → <strong>mulaiinvest.id</strong> → <strong>DNS / Nameservers</strong></li>
+          <li>Tambahkan setiap record dari Resend satu per satu ke DNS Hostinger</li>
+          <li>Kembali ke Resend → klik <strong>Verify</strong> → tunggu ~10–30 menit sampai status <strong>Verified</strong></li>
+        </ol>
+        <div class="box info"><strong>Kenapa perlu verifikasi domain?</strong>Ini membuktikan ke server email dunia bahwa kamu yang punya mulaiinvest.id dan berhak kirim email dari sana. Tanpa ini, email akan masuk spam pembeli.</div>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon amber">🔑</div>
+          <div><div class="step-num">Langkah 3.2</div><div><h3>Ambil API Key Resend</h3></div></div>
+        </div>
+        <ol class="steps-list">
+          <li>Di Resend → klik <strong>API Keys</strong> → <strong>Create API Key</strong></li>
+          <li>Beri nama: <code>pak-andung-production</code></li>
+          <li>Permission: <strong>Sending access</strong></li>
+          <li>Klik <strong>Add</strong> → <strong>langsung copy key-nya sekarang</strong> — tidak akan ditampilkan lagi</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 4: Vercel ═══ -->
+  <div class="phase">
+    <div class="phase-header p4">
+      <div class="phase-num">4</div>
+      <div><div class="phase-title">Deploy ke Vercel + isi semua environment variables</div><div class="phase-sub">~20 menit · Ini yang membuat app.mulaiinvest.id hidup di internet</div></div>
+    </div>
+    <div class="phase-body">
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon teal">▲</div>
+          <div><div class="step-num">Langkah 4.1</div><div><h3>Import project dari GitHub ke Vercel</h3></div></div>
+        </div>
+        <ol class="steps-list">
+          <li>Login ke <code>vercel.com</code> dengan akun yang sudah kamu punya</li>
+          <li>Klik <strong>Add New…</strong> → <strong>Project</strong></li>
+          <li>Klik <strong>Import Git Repository</strong> → pilih <code>pak-andung</code></li>
+          <li>Vercel akan otomatis mendeteksi ini adalah proyek Next.js — biarkan semua setting default</li>
+          <li><strong>JANGAN</strong> klik Deploy dulu — lanjut ke Langkah 4.2 untuk isi env variables</li>
+        </ol>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon teal">🔐</div>
+          <div><div class="step-num">Langkah 4.2</div><div><h3>Isi Environment Variables</h3></div></div>
+        </div>
+        <p>Di halaman yang sama (sebelum klik Deploy) → expand bagian <strong>Environment Variables</strong> → tambahkan satu per satu:</p>
+
+        <table class="env-table">
+          <thead><tr><th>Nama Variable</th><th>Nilai & Cara Dapatkan</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>NEXT_PUBLIC_SUPABASE_URL<span class="req">wajib</span></td>
+              <td>Project URL dari Supabase Settings → API<br><em>Contoh: https://abcdefghij.supabase.co</em></td>
+            </tr>
+            <tr>
+              <td>NEXT_PUBLIC_SUPABASE_ANON_KEY<span class="req">wajib</span></td>
+              <td>anon public key dari Supabase Settings → API<br><em>String panjang dimulai dari eyJ...</em></td>
+            </tr>
+            <tr>
+              <td>SUPABASE_SERVICE_ROLE_KEY<span class="req">wajib</span></td>
+              <td>service_role key dari Supabase Settings → API<br><em>⚠️ Sangat rahasia — jangan share ke siapapun</em></td>
+            </tr>
+            <tr>
+              <td>ANTHROPIC_API_KEY<span class="req">wajib</span></td>
+              <td>API key dari console.anthropic.com → API Keys<br><em>Dimulai dengan sk-ant-api...</em></td>
+            </tr>
+            <tr>
+              <td>RESEND_API_KEY<span class="req">wajib</span></td>
+              <td>API key dari Resend → API Keys<br><em>Dimulai dengan re_...</em></td>
+            </tr>
+            <tr>
+              <td>NEXT_PUBLIC_APP_URL<span class="req">wajib</span></td>
+              <td><code>https://app.mulaiinvest.id</code></td>
+            </tr>
+            <tr>
+              <td>RESEND_FROM_EMAIL<span class="req">wajib</span></td>
+              <td><code>Admin@mulaiinvest.id</code><br><em>Pastikan domain sudah terverifikasi di Resend</em></td>
+            </tr>
+            <tr>
+              <td>LYNK_WEBHOOK_SECRET<span class="opt">disarankan</span></td>
+              <td>Buat string acak panjang sendiri, mis: <code>mulaiinvest2024xYz91kSecure</code><br><em>Dipakai untuk verifikasi webhook Lynk — aktifkan setelah app jalan</em></td>
+            </tr>
+            <tr>
+              <td>SOFT_CAP_MESSAGES<span class="opt">opsional</span></td>
+              <td><code>180</code> (default) — ubah angka ini untuk adjust batas pesan<br><em>Pak Andung akan sopan menyarankan istirahat kalau melewati angka ini</em></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="box do"><strong>Cara menambahkan di Vercel</strong>Untuk setiap variable: tulis nama di kotak kiri → tulis nilai di kotak kanan → klik <strong>Add</strong>. Ulangi untuk semua 7–9 variable di atas.</div>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon teal">🚀</div>
+          <div><div class="step-num">Langkah 4.3</div><div><h3>Deploy!</h3></div></div>
+        </div>
+        <ol class="steps-list">
+          <li>Setelah semua env variable terisi → klik <strong>Deploy</strong></li>
+          <li>Tunggu ~2–3 menit — Vercel akan membangun app-mu</li>
+          <li>Kalau ada error merah, screenshot dan tanyakan ke saya (Claude) — saya akan bantu debug</li>
+          <li>Kalau berhasil (centang hijau) → Vercel akan beri URL sementara seperti <code>pak-andung-abc123.vercel.app</code></li>
+        </ol>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon amber">🌐</div>
+          <div><div class="step-num">Langkah 4.4</div><div><h3>Sambungkan subdomain app.mulaiinvest.id</h3></div></div>
+        </div>
+        <ol class="steps-list">
+          <li>Di Vercel → project kamu → <strong>Settings</strong> → <strong>Domains</strong></li>
+          <li>Klik <strong>Add</strong> → ketik <code>app.mulaiinvest.id</code> → klik <strong>Add</strong></li>
+          <li>Vercel akan menampilkan DNS record yang harus ditambahkan</li>
+          <li>Login Hostinger → DNS mulaiinvest.id → tambahkan record CNAME: <br>
+              Name: <code>app</code> → Value: <code>cname.vercel-dns.com</code></li>
+          <li>Tunggu propagasi DNS (5 menit – 1 jam)</li>
+          <li>Setelah selesai, <code>https://app.mulaiinvest.id</code> akan menampilkan halaman login Pak Andung 🎉</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 5: Lynk Webhook ═══ -->
+  <div class="phase">
+    <div class="phase-header p5">
+      <div class="phase-num">5</div>
+      <div><div class="phase-title">Sambungkan Lynk.id ke webhook</div><div class="phase-sub">~10 menit · Ini yang membuat akun pembeli terbuat otomatis setelah bayar</div></div>
+    </div>
+    <div class="phase-body">
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon purple">🔗</div>
+          <div><div class="step-num">Langkah 5.1</div><div><h3>Daftarkan URL webhook di Lynk.id</h3></div></div>
+        </div>
+        <ol class="steps-list">
+          <li>Login ke dashboard Lynk.id → <strong>Settings</strong> atau <strong>Pengaturan</strong></li>
+          <li>Cari menu <strong>Webhook</strong> atau <strong>Integrasi</strong></li>
+          <li>Masukkan URL webhook kamu:<br>
+              <code>https://app.mulaiinvest.id/api/lynk-webhook</code></li>
+          <li>Pilih event: <strong>payment.success</strong> atau setara</li>
+          <li>Simpan</li>
+        </ol>
+        <div class="box warn"><strong>Catatan penting soal webhook Lynk</strong>Setiap platform punya cara berbeda. Kalau kamu tidak menemukan menu "Webhook" di Lynk, cek dokumentasi Lynk.id atau hubungi support mereka dan minta cara untuk mendapatkan notifikasi POST saat pembayaran sukses.</div>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon purple">🧪</div>
+          <div><div class="step-num">Langkah 5.2</div><div><h3>Test webhook dengan simulasi</h3></div></div>
+        </div>
+        <p>Sebelum launch, test dengan data dummy dulu:</p>
+        <div class="code-block">
+          <div class="code-header"><div class="code-dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="code-label">Test via curl (jalankan di terminal / pakai Postman)</span></div>
+          <div class="code-body">curl -X POST https://app.mulaiinvest.id/api/lynk-webhook \
+  -H "Content-Type: application/json" \
+  -d '{
+    <span class="hi">"event"</span>: "payment.success",
+    <span class="hi">"buyer_name"</span>: "Budi Tes",
+    <span class="hi">"buyer_email"</span>: "budi.tes@email.com",
+    <span class="hi">"product_name"</span>: "Pak Andung — Akses 30 Hari",
+    <span class="hi">"amount"</span>: 79000
+  }'</div>
+        </div>
+        <p>Kalau berhasil: akun <code>budi.tes@email.com</code> terbuat di Supabase, dan email login terkirim. Cek di Supabase → Table Editor → <code>profiles</code>.</p>
+        <div class="box info"><strong>Tidak bisa pakai curl? Pakai Hoppscotch (gratis, browser)</strong>Buka <code>hoppscotch.io</code> → Method: POST → URL: (webhook URL kamu) → Body: JSON (isi seperti di atas) → Send.</div>
+      </div>
+      <div class="step">
+        <div class="step-meta">
+          <div class="step-icon purple">🔒</div>
+          <div><div class="step-num">Langkah 5.3 (opsional tapi disarankan)</div><div><h3>Aktifkan verifikasi secret webhook</h3></div></div>
+        </div>
+        <p>Setelah semua berjalan, buka file <code>app/api/lynk-webhook/route.ts</code> dan hapus <code>//</code> (uncomment) di bagian verifikasi secret:</p>
+        <div class="code-block">
+          <div class="code-header"><div class="code-dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="code-label">Uncomment bagian ini di lynk-webhook/route.ts</span></div>
+          <div class="code-body"><span class="hi">// HAPUS '//' di baris ini untuk mengaktifkan keamanan:</span>
+<span class="dim">// const secret = req.headers.get('x-webhook-secret')</span>
+<span class="dim">// if (secret !== process.env.LYNK_WEBHOOK_SECRET) {</span>
+<span class="dim">//   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })</span>
+<span class="dim">// }</span>
+
+<span class="hi">// Menjadi seperti ini (hapus // di awal setiap baris):</span>
+const secret = req.headers.get('x-webhook-secret')
+if (secret !== process.env.LYNK_WEBHOOK_SECRET) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+}</div>
+        </div>
+        <p>Lalu daftarkan <code>LYNK_WEBHOOK_SECRET</code> yang sama di setting Lynk.id (bagian "Webhook Secret" atau sejenisnya).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>§</span></div>
+
+  <!-- ENV VARIABLES LENGKAP -->
+  <div class="phase">
+    <div class="phase-header" style="background:#263340;">
+      <div class="phase-num" style="background:rgba(232,155,60,.3)">📋</div>
+      <div><div class="phase-title">Daftar lengkap Environment Variables untuk Vercel</div><div class="phase-sub">Copy tabel ini sebagai checklist saat setup</div></div>
+    </div>
+    <div class="phase-body">
+      <div class="step">
+        <p>Masuk ke Vercel → project kamu → <strong>Settings</strong> → <strong>Environment Variables</strong> dan pastikan semua ini sudah terisi:</p>
+        <table class="env-table">
+          <thead><tr><th>Variable</th><th>Dari mana</th><th>Contoh nilai</th></tr></thead>
+          <tbody>
+            <tr><td>NEXT_PUBLIC_SUPABASE_URL</td><td>Supabase → Settings → API</td><td>https://xyz.supabase.co</td></tr>
+            <tr><td>NEXT_PUBLIC_SUPABASE_ANON_KEY</td><td>Supabase → Settings → API</td><td>eyJhbGciOi...</td></tr>
+            <tr><td>SUPABASE_SERVICE_ROLE_KEY</td><td>Supabase → Settings → API</td><td>eyJhbGciOi... (secret!)</td></tr>
+            <tr><td>ANTHROPIC_API_KEY</td><td>console.anthropic.com</td><td>sk-ant-api03-...</td></tr>
+            <tr><td>RESEND_API_KEY</td><td>resend.com → API Keys</td><td>re_abc123...</td></tr>
+            <tr><td>NEXT_PUBLIC_APP_URL</td><td>URL subdomain kamu</td><td>https://app.mulaiinvest.id</td></tr>
+            <tr><td>RESEND_FROM_EMAIL</td><td>Email yang sudah diverifikasi Resend</td><td>Admin@mulaiinvest.id</td></tr>
+            <tr><td>LYNK_WEBHOOK_SECRET</td><td>Buat sendiri (string acak)</td><td>mulaiinvest2024Secure!</td></tr>
+            <tr><td>SOFT_CAP_MESSAGES</td><td>Angka sesukamu</td><td>180</td></tr>
+          </tbody>
+        </table>
+        <div class="box warn"><strong>Setelah menambah/mengubah env variable di Vercel</strong>Kamu harus redeploy agar perubahan berlaku. Di Vercel → Deployments → klik tombol tiga titik di deployment terbaru → <strong>Redeploy</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>§</span></div>
+
+  <!-- EDIT SYSTEM PROMPT -->
+  <div class="phase">
+    <div class="phase-header" style="background:#1A5236;">
+      <div class="phase-num" style="background:rgba(46,125,82,.4)">✏️</div>
+      <div><div class="phase-title">Cara mengedit kepribadian Pak Andung</div><div class="phase-sub">Satu file, satu tempat — tidak perlu menyentuh file lain</div></div>
+    </div>
+    <div class="phase-body">
+      <div class="step">
+        <p>Semua kepribadian, gaya bicara, dan aturan Pak Andung ada di satu file: <code>lib/system-prompt.ts</code></p>
+        <p>Buka file itu di GitHub (klik nama file → klik ikon pensil ✏️ di kanan atas) dan edit bagian <code>SYSTEM_PROMPT</code>. Setelah simpan → Vercel otomatis redeploy dalam 1–2 menit.</p>
+        <div class="box do"><strong>Yang paling sering perlu diedit:</strong>
+- Nama bisnis atau produk yang disebut Pak Andung<br>
+- Saham atau sektor yang jadi fokus<br>
+- Nada bicara (lebih formal / lebih santai)<br>
+- Email admin untuk pertanyaan teknis<br>
+- Konten 4 dimensi analisa saham</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST AKHIR -->
+  <div class="checklist-final">
+    <h3>✅ Checklist Sebelum Launch</h3>
+    <ul>
+      <li>GitHub repository <code>pak-andung</code> sudah dibuat (private)</li>
+      <li>Semua file kode sudah di-upload ke GitHub</li>
+      <li>File <code>.env.local</code> TIDAK ada di GitHub (terlindungi oleh .gitignore)</li>
+      <li>Supabase project dibuat di region Singapore</li>
+      <li>SQL schema sudah dijalankan — tabel <code>profiles</code> dan <code>chat_messages</code> sudah ada</li>
+      <li>Email confirmation di Supabase Auth sudah dimatikan</li>
+      <li>Domain mulaiinvest.id sudah terverifikasi di Resend</li>
+      <li>Semua 7–9 environment variables sudah diisi di Vercel</li>
+      <li>Deploy Vercel berhasil (tidak ada error merah)</li>
+      <li>Subdomain <code>app.mulaiinvest.id</code> sudah diarahkan ke Vercel via CNAME</li>
+      <li>Halaman login muncul di app.mulaiinvest.id ✓</li>
+      <li>Test webhook manual berhasil — akun dibuat + email terkirim ✓</li>
+      <li>Test login + chat Pak Andung berjalan normal ✓</li>
+      <li>Test akun dengan <code>access_expires_at</code> kemarin → tampil halaman "Akses berakhir" ✓</li>
+      <li>URL webhook didaftarkan di Lynk.id</li>
+      <li>Test beli produk Lynk (Rp 0 trial) → akun terbuat → email terkirim ✓</li>
+    </ul>
+  </div>
+
+  <div class="box do" style="margin-top:24px">
+    <strong>🆘 Kalau ada error atau macet di langkah mana pun</strong>
+    Jangan panik. Buka claude.ai, ketik: <em>"Saya sedang setup Pak Andung di Vercel dan dapat error ini: [paste error-nya]"</em> — saya akan bantu debug langkah demi langkah. Error saat deploy adalah hal normal, bukan tanda kamu melakukan sesuatu yang salah.
+  </div>
+
+</div>
+
+<footer>
+  <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:8px;">Mulai<em style="color:#E89B3C">Invest</em></div>
+  <p>Panduan Deploy Pak Andung v1.0 · Semua kode sudah dibuatkan, kamu tinggal deploy.</p>
+</footer>
+
+</body>
+</html>
