@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { SOFT_CAP_MESSAGES } from '@/lib/config'
+import ProgressRail, { RailScores } from '@/components/ProgressRail'
 
 interface Message {
   id: string
@@ -14,22 +15,32 @@ interface Message {
   created_at?: string
 }
 
+export interface InitialProgress {
+  level: number
+  levelLabel: string
+  focus: string
+  xp: number
+  scores: RailScores
+}
+
 interface Props {
   userId: string
   userName: string
   messageCount: number
   accessExpiresAt: string
   initialMessages: Message[]
+  initialProgress: InitialProgress
 }
 
 export default function ChatInterface({
-  userId, userName, messageCount: initialCount, accessExpiresAt, initialMessages
+  userId, userName, messageCount: initialCount, accessExpiresAt, initialMessages, initialProgress
 }: Props) {
   const [messages, setMessages]     = useState<Message[]>(initialMessages)
   const [input, setInput]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [msgCount, setMsgCount]     = useState(initialCount)
   const [showMenu, setShowMenu]     = useState(false)
+  const [progress, setProgress]     = useState<InitialProgress>(initialProgress)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const router = useRouter()
@@ -94,6 +105,17 @@ export default function ChatInterface({
       }
       setMessages(prev => [...prev, assistantMsg])
       setMsgCount(data.newMessageCount)
+
+      // Update ProgressRail dari sidecar yang sudah di-parse server
+      if (data.progress) {
+        setProgress({
+          level: data.progress.level,
+          levelLabel: data.progress.level_label,
+          focus: data.progress.focus,
+          xp: data.progress.xp,
+          scores: data.progress.scores,
+        })
+      }
 
     } catch (err) {
       const errMsg: Message = {
@@ -191,6 +213,15 @@ export default function ChatInterface({
           </div>
         </div>
       </div>
+
+      {/* ── PROGRESS RAIL ── */}
+      <ProgressRail
+        level={progress.level}
+        levelLabel={progress.levelLabel}
+        focus={progress.focus}
+        xp={progress.xp}
+        scores={progress.scores}
+      />
 
       {/* ── PERINGATAN SOFT CAP ── */}
       {softCapWarning && (
