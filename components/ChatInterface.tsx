@@ -7,12 +7,18 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { SOFT_CAP_MESSAGES } from '@/lib/config'
 import ProgressRail, { RailScores } from '@/components/ProgressRail'
+import GuidedBanner from '@/components/GuidedBanner'
+import LevelUpCard from '@/components/LevelUpCard'
+import CitationChips, { Citation } from '@/components/CitationChips'
+import { nextCheckpoint } from '@/lib/curriculum'
 
 interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
   created_at?: string
+  citations?: Citation[]
+  levelUp?: { label: string; focus: string } | null
 }
 
 export interface InitialProgress {
@@ -21,6 +27,7 @@ export interface InitialProgress {
   focus: string
   xp: number
   scores: RailScores
+  completed: string[]
 }
 
 interface Props {
@@ -69,8 +76,8 @@ export default function ChatInterface({
     router.push('/login')
   }
 
-  async function sendMessage() {
-    const text = input.trim()
+  // Inti pengiriman — dipakai chat bebas maupun Belajar Terpandu.
+  async function submit(text: string, mode?: 'guided') {
     if (!text || loading) return
 
     // Tambah pesan user ke layar segera
@@ -81,14 +88,13 @@ export default function ChatInterface({
       created_at: new Date().toISOString(),
     }
     setMessages(prev => [...prev, userMsg])
-    setInput('')
     setLoading(true)
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, messageCount: msgCount }),
+        body: JSON.stringify({ message: text, messageCount: msgCount, mode }),
       })
 
       const data = await res.json()
@@ -97,24 +103,28 @@ export default function ChatInterface({
         throw new Error(data.error || 'Terjadi kesalahan')
       }
 
+      const p = data.progress
       const assistantMsg: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: data.reply,
         created_at: new Date().toISOString(),
+        citations: p?.citations ?? [],
+        levelUp: p?.level_changed ? { label: p.level_label, focus: p.focus } : null,
       }
       setMessages(prev => [...prev, assistantMsg])
       setMsgCount(data.newMessageCount)
 
       // Update ProgressRail dari sidecar yang sudah di-parse server
-      if (data.progress) {
-        setProgress({
-          level: data.progress.level,
-          levelLabel: data.progress.level_label,
-          focus: data.progress.focus,
-          xp: data.progress.xp,
-          scores: data.progress.scores,
-        })
+      if (p) {
+        setProgress(prev => ({
+          level: p.level,
+          levelLabel: p.level_label,
+          focus: p.focus,
+          xp: p.xp,
+          scores: p.scores,
+          completed: p.completed ?? prev.completed,
+        }))
       }
 
     } catch (err) {
@@ -131,6 +141,19 @@ export default function ChatInterface({
     }
   }
 
+  function sendMessage() {
+    const text = input.trim()
+    if (!text || loading) return
+    setInput('')
+    submit(text)
+  }
+
+  // Tombol "Lanjut belajar ->": mulai/teruskan checkpoint aktif berikutnya
+  function sendGuided() {
+    if (loading) return
+    submit('Ayo kita lanjut belajar terpandu.', 'guided')
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -145,6 +168,7 @@ export default function ChatInterface({
   }
 
   const softCapWarning = msgCount >= SOFT_CAP_MESSAGES * 0.9 && msgCount < SOFT_CAP_MESSAGES
+  const activeCheckpoint = nextCheckpoint(progress.completed)
 
   return (
     <div className="flex flex-col h-screen" style={{ background: '#FDF8F0', maxWidth: 720, margin: '0 auto' }}>
@@ -221,7 +245,11 @@ export default function ChatInterface({
         focus={progress.focus}
         xp={progress.xp}
         scores={progress.scores}
+        completed={progress.completed}
       />
+
+      {/* ── BANNER BELAJAR TERPANDU ── */}
+      <GuidedBanner active={activeCheckpoint} loading={loading} onContinue={sendGuided} />
 
       {/* ── PERINGATAN SOFT CAP ── */}
       {softCapWarning && (
@@ -265,29 +293,43 @@ export default function ChatInterface({
 
         {/* Render pesan */}
         {messages.map((msg) => (
-          <div key={msg.id}
-               className={`flex gap-3 message-enter ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+          <div key={msg.id}>
+            <div className={`flex gap-3 message-enter ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
 
-            {/* Avatar */}
-            <div className={`w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-sm
-                            ${msg.role === 'assistant'
-                              ? 'bg-teal text-white'
-                              : 'text-white'}`}
-                 style={msg.role === 'user' ? { background: '#2D6E7E' } : { background: '#0F4C5C' }}>
-              {msg.role === 'assistant' ? '📈' : userName.charAt(0).toUpperCase()}
-            </div>
-
-            {/* Bubble */}
-            <div className={`flex flex-col gap-1 max-w-[78%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className="px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap"
-                   style={msg.role === 'assistant'
-                     ? { background: '#FFFFFF', color: '#1A2832', border: '1px solid #E2D9C8',
-                         borderTopLeftRadius: 4 }
-                     : { background: '#0F4C5C', color: '#FDF8F0', borderTopRightRadius: 4 }}>
-                {msg.content}
+              {/* Avatar */}
+              <div className={`w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-sm
+                              ${msg.role === 'assistant'
+                                ? 'bg-teal text-white'
+                                : 'text-white'}`}
+                   style={msg.role === 'user' ? { background: '#2D6E7E' } : { background: '#0F4C5C' }}>
+                {msg.role === 'assistant' ? '📈' : userName.charAt(0).toUpperCase()}
               </div>
-              <span className="text-xs text-muted px-1">{formatTime(msg.created_at)}</span>
+
+              {/* Bubble */}
+              <div className={`flex flex-col gap-1 max-w-[78%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                <div className="px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap"
+                     style={msg.role === 'assistant'
+                       ? { background: '#FFFFFF', color: '#1A2832', border: '1px solid #E2D9C8',
+                           borderTopLeftRadius: 4 }
+                       : { background: '#0F4C5C', color: '#FDF8F0', borderTopRightRadius: 4 }}>
+                  {msg.content}
+                </div>
+
+                {/* Citation chips "Kata buku 📖" */}
+                {msg.role === 'assistant' && msg.citations && msg.citations.length > 0 && (
+                  <CitationChips citations={msg.citations} />
+                )}
+
+                <span className="text-xs text-muted px-1">{formatTime(msg.created_at)}</span>
+              </div>
             </div>
+
+            {/* Kartu naik level (inline, sopan) */}
+            {msg.role === 'assistant' && msg.levelUp && (
+              <div className="mt-1" style={{ paddingLeft: 44 }}>
+                <LevelUpCard levelLabel={msg.levelUp.label} focus={msg.levelUp.focus} />
+              </div>
+            )}
           </div>
         ))}
 
