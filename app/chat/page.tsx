@@ -35,6 +35,9 @@ export default async function ChatPage() {
   // Progress awal untuk ProgressRail (default aman kalau kolom belum ada / null)
   const level = profile.level ?? 1
   const def = levelDef(level)
+  const completed = Array.isArray(profile.completed_checkpoints)
+    ? (profile.completed_checkpoints as string[])
+    : []
   const initialProgress = {
     level,
     levelLabel: profile.level_label ?? def.label,
@@ -46,6 +49,7 @@ export default async function ChatPage() {
       valuasi: profile.score_valuasi ?? 0,
       risiko: profile.score_risiko ?? 0,
     },
+    completed,
   }
 
   return (
