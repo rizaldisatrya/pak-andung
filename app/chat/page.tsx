@@ -2,6 +2,7 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import ChatInterface from '@/components/ChatInterface'
+import { levelDef } from '@/lib/levels'
 
 export default async function ChatPage() {
   const supabase = createServerSupabaseClient()
@@ -30,6 +31,22 @@ export default async function ChatPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
     .limit(50)
+
+  // Progress awal untuk ProgressRail (default aman kalau kolom belum ada / null)
+  const level = profile.level ?? 1
+  const def = levelDef(level)
+  const initialProgress = {
+    level,
+    levelLabel: profile.level_label ?? def.label,
+    focus: def.focus,
+    xp: profile.xp ?? 0,
+    scores: {
+      bisnis: profile.score_bisnis ?? 0,
+      finansial: profile.score_finansial ?? 0,
+      valuasi: profile.score_valuasi ?? 0,
+      risiko: profile.score_risiko ?? 0,
+    },
+  }
 
   return (
     <div>
@@ -77,6 +94,7 @@ export default async function ChatPage() {
         messageCount={profile.message_count}
         accessExpiresAt={profile.access_expires_at}
         initialMessages={messages || []}
+        initialProgress={initialProgress}
       />
     </div>
   )
