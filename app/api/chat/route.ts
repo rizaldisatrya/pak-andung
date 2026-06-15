@@ -8,7 +8,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server'
 import { buildSystemPrompt, SOFT_CAP_MESSAGE } from '@/lib/system-prompt'
 import { SOFT_CAP_MESSAGES } from '@/lib/config'
-import { computeLevel, isValidCheckpoint, levelDef } from '@/lib/levels'
+import { computeLevel, isValidCheckpoint, levelDef, nextCheckpoint } from '@/lib/levels'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -59,10 +59,11 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Ambil data dari request
-    const { message, messageCount } = await req.json()
+    const { message, messageCount, mode } = await req.json()
     if (!message?.trim()) {
       return NextResponse.json({ error: 'Pesan kosong.' }, { status: 400 })
     }
+    const isGuided = mode === 'guided'
 
     // 3. Cek apakah sudah melewati soft cap
     const currentCount: number = messageCount || 0
@@ -106,7 +107,19 @@ export async function POST(req: NextRequest) {
     const levelBefore: number = profile?.level ?? 1
     const xpBefore: number = profile?.xp ?? 0
 
-    // 5. Bangun system prompt v2 dengan progress murid
+    // 5. Bangun system prompt v2 dengan progress murid.
+    //    Jika mode Belajar Terpandu, arahkan ke checkpoint aktif berikutnya.
+    const activeBefore = nextCheckpoint(completedBefore)
+    const guided = isGuided && activeBefore
+      ? {
+          id: activeBefore.id,
+          title: activeBefore.title,
+          description: activeBefore.description,
+          module: activeBefore.module,
+          level: activeBefore.level,
+        }
+      : null
+
     const systemPrompt = buildSystemPrompt({
       level: levelBefore,
       xp: xpBefore,
@@ -115,6 +128,7 @@ export async function POST(req: NextRequest) {
       valuasi: scoresBefore.valuasi,
       risiko: scoresBefore.risiko,
       checkpoints: completedBefore,
+      guided,
     })
 
     // Balik urutan (terbaru di akhir)
@@ -227,6 +241,7 @@ export async function POST(req: NextRequest) {
         level_changed: levelChanged,
         scores: scoresAfter,
         citations: sidecar?.citations ?? [],
+        completed: completedAfter,
       },
     })
 
