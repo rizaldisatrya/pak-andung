@@ -9,6 +9,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { CURRICULUM, nextCheckpoint } from '@/lib/curriculum'
+import { unlockedLevel, levelDefaultAnchor } from '@/lib/materi-map'
 
 export interface RailScores {
   bisnis: number
@@ -64,11 +65,22 @@ function Bar({ label, short, value }: { label: string; short: string; value: num
 function PetaBelajar({ completed }: { completed: string[] }) {
   const done = new Set(completed)
   const active = nextCheckpoint(completed)
+  const lvl = unlockedLevel(completed)
+  const materiHref = `/materi?to=${levelDefaultAnchor(lvl)}`
   return (
     <div className="mt-2 pt-2 space-y-2" style={{ borderTop: '1px dashed #E2D9C8' }}>
-      <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: 'rgba(9,15,91,0.5)' }}>
-        Peta Belajar
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: 'rgba(9,15,91,0.5)' }}>
+          Peta Belajar
+        </p>
+        <a
+          href={materiHref}
+          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold shrink-0"
+          style={{ background: '#0F4C5C', color: '#FDF8F0', textDecoration: 'none' }}
+        >
+          📖 Baca Materi
+        </a>
+      </div>
       {CURRICULUM.map(m => {
         const doneCount = m.checkpoints.filter(c => done.has(c.id)).length
         return (
