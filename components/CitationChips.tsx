@@ -42,10 +42,18 @@ function Chip({ c }: { c: Citation }) {
 export default function CitationChips({ citations }: Props) {
   if (!citations || citations.length === 0) return null
   return (
-    <div className="flex flex-wrap gap-1.5 mt-1.5">
+    <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
       {citations.map((c, i) => (
         <Chip key={`${c.label}-${i}`} c={c} />
       ))}
+      <a
+        href="/materi"
+        className="rounded-lg px-2 py-1 text-[11px] font-semibold transition-all"
+        style={{ background: '#0F4C5C', color: '#FDF8F0', textDecoration: 'none' }}
+        title="Baca materi lengkap di buku"
+      >
+        📖 Buka di buku →
+      </a>
     </div>
   )
 }
