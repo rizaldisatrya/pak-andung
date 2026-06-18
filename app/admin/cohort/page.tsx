@@ -7,7 +7,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 
 // ── TYPES ─────────────────────────────────────────────────────
 interface CohortSession {
@@ -180,7 +180,7 @@ function FormSesi({
 
 // ── HALAMAN UTAMA ADMIN ───────────────────────────────────────
 export default function AdminCohortPage() {
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const [sessions, setSessions]       = useState<CohortSession[]>([])
   const [loading, setLoading]         = useState(true)
   const [showForm, setShowForm]       = useState(false)
