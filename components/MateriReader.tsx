@@ -13,15 +13,44 @@ const CREAM = '#FDF8F0'
 export default function MateriReader({
   unlocked,
   initialTo,
+  cap,
 }: {
   unlocked: number
   initialTo: string
+  cap?: number | null
 }) {
   const [to, setTo] = useState(initialTo || '')
   const src = `/api/materi${to ? `?to=${encodeURIComponent(to)}` : ''}`
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      {/* Pita Trial — selalu tampil (bukan cuma tooltip) supaya jelas di HP */}
+      {cap != null && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 8,
+            padding: '8px 14px',
+            background: '#FDF0DC',
+            borderBottom: '1px solid #F5D4A0',
+            fontSize: 12,
+            color: '#7A4A0A',
+          }}
+        >
+          <span>📘 Versi Trial — {cap} bab pertama gratis.</span>
+          <a
+            href="https://mulaiinvest.id"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#B5731C', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}
+          >
+            Upgrade →
+          </a>
+        </div>
+      )}
+
       {/* Baris navigasi bab */}
       <div
         style={{
@@ -35,14 +64,21 @@ export default function MateriReader({
         }}
       >
         {CHAPTERS.map((c) => {
-          const open = isChapterUnlocked(c.level, unlocked)
+          const tierLocked = cap != null && c.chapter > cap
+          const open = isChapterUnlocked(c.level, unlocked) && !tierLocked
           const active = to === c.anchor
           return (
             <button
               key={c.anchor}
               onClick={() => open && setTo(c.anchor)}
               disabled={!open}
-              title={open ? c.title : `Terkunci · Capai Level ${c.level} (${LEVEL_LABEL[c.level]})`}
+              title={
+                open
+                  ? c.title
+                  : tierLocked
+                  ? 'Terkunci · Upgrade ke akses 30 hari penuh'
+                  : `Terkunci · Capai Level ${c.level} (${LEVEL_LABEL[c.level]})`
+              }
               style={{
                 flex: '0 0 auto',
                 fontSize: 12,
