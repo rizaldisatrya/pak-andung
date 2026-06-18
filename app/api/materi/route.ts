@@ -9,7 +9,7 @@
 // ─────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { unlockedLevel, LEVEL_LABEL } from '@/lib/materi-map'
+import { unlockedLevel, materiChapterCap, LEVEL_LABEL } from '@/lib/materi-map'
 import { getMateri } from '@/lib/materi-parse'
 
 export const dynamic = 'force-dynamic'
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('access_expires_at, level, completed_checkpoints')
+    .select('access_expires_at, level, completed_checkpoints, product_name, created_at')
     .eq('id', user.id)
     .single()
   if (!profile) return new NextResponse('Unauthorized', { status: 401 })
@@ -47,11 +47,12 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Akses berakhir', { status: 403 })
   }
 
-  // 2. Level yang sudah ter-unlock
+  // 2. Level yang sudah ter-unlock + batas bab untuk produk Trial
   const completed = Array.isArray(profile.completed_checkpoints)
     ? (profile.completed_checkpoints as string[])
     : []
   const unlocked = unlockedLevel(completed, profile.level)
+  const cap = materiChapterCap(profile.product_name, profile.created_at)
 
   // 3. Anchor target (sanitasi)
   const toRaw = req.nextUrl.searchParams.get('to') || ''
@@ -68,8 +69,22 @@ export async function GET(req: NextRequest) {
   const { head, blocks } = materi
   const body = blocks
     .map((b) => {
-      if (b.kind !== 'chapter' || b.level <= unlocked) return b.html
+      if (b.kind !== 'chapter') return b.html
+      const lockedByCap = cap != null && b.chapter > cap
+      const lockedByLevel = b.level > unlocked
+      if (!lockedByCap && !lockedByLevel) return b.html
       if (!b.anchor) return '' // lewati isi bab terkunci
+
+      // Batas produk (Trial) didahulukan — progres belajar tidak membuka ini,
+      // hanya upgrade ke akses 30 hari yang bisa.
+      if (lockedByCap) {
+        return `<section class="page materi-locked"><div class="lock-card">
+          <div class="lock-ic">🔒</div>
+          <div class="lock-bab">Bab ${b.chapter}</div>
+          <div class="lock-title">${escapeHtml(b.title)}</div>
+          <p class="lock-msg">Bab ini khusus untuk akses <strong>30 hari penuh</strong>. <a href="https://mulaiinvest.id" target="_blank" rel="noopener noreferrer">Upgrade di sini →</a></p>
+        </div></section>`
+      }
       const label = LEVEL_LABEL[b.level] || ''
       return `<section class="page materi-locked"><div class="lock-card">
         <div class="lock-ic">🔒</div>
