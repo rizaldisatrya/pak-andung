@@ -133,14 +133,19 @@ export async function POST(req: NextRequest) {
     const raporUrl = `${appUrl}/rapor`
     const firstName = profile.full_name.split(' ')[0]
 
-    await resend.emails.send({
-      from:    `Pak Andung MulaiInvest <${process.env.RESEND_FROM_EMAIL || 'Admin@mulaiinvest.id'}>`,
-      to:      profile.email,
-      subject: `📋 Rapor ${profile.product_name?.includes('Trial') ? '7 hari' : '30 hari'} kamu sudah siap, ${firstName}`,
-      html:    buildRaporEmailHtml({ firstName, raporUrl, productName: profile.product_name || '' }),
-    })
-
-    console.log(`Rapor generated dan email terkirim ke: ${profile.email}`)
+    try {
+  await resend.emails.send({
+    from:    `Pak Andung MulaiInvest <${process.env.RESEND_FROM_EMAIL || 'Admin@mulaiinvest.id'}>`,
+    to:      profile.email,
+    subject: `📋 Rapor ${profile.product_name?.includes('Trial') ? '7 hari' : '30 hari'} kamu sudah siap, ${firstName}`,
+    html:    buildRaporEmailHtml({ firstName, raporUrl, productName: profile.product_name || '' }),
+  })
+  console.log(`Rapor generated dan email terkirim ke: ${profile.email}`)
+} catch (emailError) {
+  // Rapor sudah berhasil dinilai & disimpan di atas — jangan balas error ke user
+  // hanya karena pengiriman email gagal (mereka tetap bisa lihat rapor di /rapor).
+  console.error('Gagal kirim email rapor (rapor tetap tersimpan):', emailError)
+}
 
     return NextResponse.json({
       success: true,
