@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
-import { DEFAULT_ACCESS_DAYS, TRIAL_ACCESS_DAYS, TRIAL_KEYWORDS } from '@/lib/config'
+import { DEFAULT_ACCESS_DAYS, TRIAL_ACCESS_DAYS, isTrialProduct } from '@/lib/config'
 
 
 // ── COHORT DETECTION FUNCTIONS ──────────────────────────────
@@ -158,9 +158,7 @@ if (isCohort) {
     // ── TENTUKAN DURASI AKSES ──────────────────────────────────
     // Kalau nama produk mengandung kata trial, beri akses 7 hari.
     // Kalau tidak, beri akses 30 hari.
-    const isTrial = TRIAL_KEYWORDS.some(kw =>
-      productName.toLowerCase().includes(kw)
-    )
+    const isTrial = isTrialProduct(productName)
     const accessDays    = isTrial ? TRIAL_ACCESS_DAYS : DEFAULT_ACCESS_DAYS
     const expiresAt     = new Date()
     expiresAt.setDate(expiresAt.getDate() + accessDays)
