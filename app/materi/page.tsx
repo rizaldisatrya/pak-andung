@@ -3,7 +3,7 @@
 // Menentukan level ter-unlock user lalu menyerahkan ke <MateriReader>.
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { unlockedLevel, levelDefaultAnchor, LEVEL_LABEL } from '@/lib/materi-map'
+import { unlockedLevel, defaultAnchorWithCap, chapterForAnchor, materiChapterCap, LEVEL_LABEL } from '@/lib/materi-map'
 import MateriReader from '@/components/MateriReader'
 
 export const dynamic = 'force-dynamic'
@@ -20,7 +20,7 @@ export default async function MateriPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('access_expires_at, level, completed_checkpoints')
+    .select('access_expires_at, level, completed_checkpoints, product_name, created_at')
     .eq('id', user.id)
     .single()
   if (!profile) redirect('/login')
@@ -32,9 +32,14 @@ export default async function MateriPage({
     ? (profile.completed_checkpoints as string[])
     : []
   const unlocked = unlockedLevel(completed, profile.level)
+  const cap = materiChapterCap(profile.product_name, profile.created_at)
 
   const raw = searchParams?.to
-  const to = raw && /^[a-z0-9-]+$/i.test(raw) ? raw : levelDefaultAnchor(unlocked)
+  let to = raw && /^[a-z0-9-]+$/i.test(raw) ? raw : defaultAnchorWithCap(unlocked, cap)
+  if (cap != null) {
+    const meta = chapterForAnchor(to)
+    if (meta && meta.chapter > cap) to = defaultAnchorWithCap(unlocked, cap)
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
@@ -72,7 +77,7 @@ export default async function MateriPage({
 
       {/* ═══ READER ═══ */}
       <div style={{ flex: 1, minHeight: 0 }}>
-        <MateriReader unlocked={unlocked} initialTo={to} />
+        <MateriReader unlocked={unlocked} initialTo={to} cap={cap} />
       </div>
     </div>
   )
