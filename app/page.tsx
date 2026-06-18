@@ -16,18 +16,26 @@ export default function HomePage() {
     const checkAuth = async () => {
       try {
         const supabase = createClientComponentClient()
-        // getSession tidak melempar "Auth session missing" saat user logout
-        // (berbeda dgn getUser). null session = belum login = ke /login.
-        const { data: { session } } = await supabase.auth.getSession()
+
+        // Timeout 10 detik jika getSession hang (network issue, CORS, dll)
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout — arahkan ke /login')), 10000)
+        )
+
+        const sessionPromise = supabase.auth.getSession()
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.getSession>>
+
         if (session?.user) {
           router.push('/chat')
         } else {
           router.push('/login')
         }
       } catch (err) {
-        // Error tak terduga -> tetap arahkan ke login agar tidak blank
         const msg = err instanceof Error ? err.message : String(err)
+        console.error('[/] Auth error:', msg)
         setError(msg)
+        // Fallback: arahkan ke /login setelah 2 detik
+        setTimeout(() => router.push('/login'), 2000)
       }
     }
     checkAuth()
@@ -35,10 +43,10 @@ export default function HomePage() {
 
   if (error) {
     return (
-      <div style={{ padding: '32px', fontFamily: 'sans-serif', color: '#c0392b', background: '#fff5f5' }}>
+      <div style={{ padding: '32px', fontFamily: 'sans-serif', color: '#c0392b', background: '#fff5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <h2>Error</h2>
         <p>{error}</p>
-        <a href="/login" style={{ color: '#0F4C5C' }}>→ Ke halaman login</a>
+        <p style={{ fontSize: '12px', color: '#999', marginTop: '12px' }}>Mengalihkan ke halaman login...</p>
       </div>
     )
   }
@@ -49,5 +57,6 @@ export default function HomePage() {
     </div>
   )
 }
+
 
 
