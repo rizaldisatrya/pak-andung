@@ -10,6 +10,7 @@
 //     MENCAPAI level, sejalan dengan kurikulum).
 // ─────────────────────────────────────────────────────────────
 import { computeLevel } from './curriculum'
+import { isTrialProduct, TRIAL_MATERI_CHAPTER_CAP, MATERI_CAP_LAUNCH_AT } from './config'
 
 export interface ChapterMeta {
   chapter: number   // 1..8
@@ -60,4 +61,26 @@ export function unlockedLevel(completed: string[], profileLevel?: number | null)
 
 export function isChapterUnlocked(chapterLevel: number, unlocked: number): boolean {
   return chapterLevel <= unlocked
+}
+
+export function chapterForAnchor(anchor: string): ChapterMeta | undefined {
+  return CHAPTERS.find(c => c.anchor === anchor)
+}
+
+// Batas bab untuk produk Trial (teaser). null = tidak ada batas (produk
+// 30 hari / pelanggan lama sebelum MATERI_CAP_LAUNCH_AT).
+export function materiChapterCap(
+  productName?: string | null,
+  createdAt?: string | null
+): number | null {
+  if (createdAt && new Date(createdAt) < new Date(MATERI_CAP_LAUNCH_AT)) return null
+  return isTrialProduct(productName) ? TRIAL_MATERI_CHAPTER_CAP : null
+}
+
+// Anchor default tombol "Baca Materi", dipangkas ke bab terakhir yang
+// masih boleh dibaca kalau level user sebenarnya sudah lebih tinggi dari cap.
+export function defaultAnchorWithCap(unlocked: number, cap: number | null): string {
+  const lvlChapter = CHAPTERS.find(c => c.level === unlocked)?.chapter ?? 1
+  const chapterNum = cap != null ? Math.min(lvlChapter, cap) : lvlChapter
+  return CHAPTERS.find(c => c.chapter === chapterNum)?.anchor ?? 'bab-1'
 }
