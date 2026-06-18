@@ -15,10 +15,21 @@ export function createServerSupabaseClient() {
           return cookieStore.get(name)?.value
         },
         set(name: string, value: string, options: Record<string, unknown>) {
-          cookieStore.set({ name, value, ...options })
+          // Di Server Component, cookies bersifat read-only → set() melempar error.
+          // Bungkus try-catch agar Supabase tidak retry refresh token tanpa henti
+          // (penyebab OOM). Token tetap valid untuk request ini.
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch {
+            // diabaikan dengan sengaja (read-only context)
+          }
         },
         remove(name: string, options: Record<string, unknown>) {
-          cookieStore.set({ name, value: '', ...options })
+          try {
+            cookieStore.set({ name, value: '', ...options })
+          } catch {
+            // diabaikan dengan sengaja (read-only context)
+          }
         },
       },
     }
