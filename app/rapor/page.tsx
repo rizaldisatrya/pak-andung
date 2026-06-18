@@ -7,7 +7,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useEffect, useState, useCallback } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 // ── TYPES ─────────────────────────────────────────────────────
@@ -160,7 +160,7 @@ function KartuDimensi({ d }: { d: DimensiRapor }) {
 
 // ── HALAMAN UTAMA ─────────────────────────────────────────────
 export default function RaporPage() {
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   const [userId, setUserId]           = useState<string | null>(null)
   const [profile, setProfile]         = useState<{ full_name: string; access_expires_at: string } | null>(null)
