@@ -1,44 +1,40 @@
 // app/page.tsx
 // Halaman utama — cek login lalu arahkan ke halaman yang tepat
-// Client component untuk menghindari cookie-setting error di Vercel serverless
+// Client component (pakai @/lib/supabase/client, SAMA dengan /login & ChatInterface
+// — sebelumnya sempat pakai @supabase/auth-helpers-nextjs yang BEDA library dari
+// sisa app ini; dua library Supabase browser berjalan bersamaan bisa saling
+// rebutan lock auth dan membuat getSession() hang selamanya).
 
 'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 
 export default function HomePage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const supabase = createClientComponentClient()
+    const supabase = createClient()
 
-        // Timeout 10 detik jika getSession hang (network issue, CORS, dll)
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout — arahkan ke /login')), 10000)
-        )
+    const timeoutId = setTimeout(() => {
+      setError('Auth timeout')
+      router.push('/login')
+    }, 8000)
 
-        const sessionPromise = supabase.auth.getSession()
-        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.getSession>>
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeoutId)
+      router.push(session?.user ? '/chat' : '/login')
+    }).catch((err) => {
+      clearTimeout(timeoutId)
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[/] Auth error:', msg)
+      setError(msg)
+      router.push('/login')
+    })
 
-        if (session?.user) {
-          router.push('/chat')
-        } else {
-          router.push('/login')
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        console.error('[/] Auth error:', msg)
-        setError(msg)
-        // Fallback: arahkan ke /login setelah 2 detik
-        setTimeout(() => router.push('/login'), 2000)
-      }
-    }
-    checkAuth()
+    return () => clearTimeout(timeoutId)
   }, [router])
 
   if (error) {
@@ -57,6 +53,3 @@ export default function HomePage() {
     </div>
   )
 }
-
-
-
